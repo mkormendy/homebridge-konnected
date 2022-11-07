@@ -36,7 +36,7 @@ A clear and concise description of what you expected to happen.
 **Attach Files to Support Your Experience**
  - Screenshots of your Konnected App device settings screen
  - Debug Log ([turn on debugging in Homebridge/HOOBS](https://github.com/homebridge/homebridge/wiki/Basic-Troubleshooting#debug-mode) and copy the results into a text file starting from boot up to shortly after the where the issue occurs)
- - Homebridge/HOOBS config.json file and or plugin section from the config.json found in your [.homebridge folder](https://github.com/homebridge/homebridge/wiki/Basic-Troubleshooting#understanding-where-your-files-are-macos).
+ - Homebridge/HOOBS config.json file and or plugin section from the config.json found in your [```.homebridge folder```](https://github.com/homebridge/homebridge/wiki/Basic-Troubleshooting#understanding-where-your-files-are-macos).
 
 **Additional Relevant Information**
 Add any other context about the problem here.
