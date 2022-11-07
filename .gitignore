@@ -3,6 +3,9 @@ dist
 
 # ------------- Defaults ------------- #
 
+# Nodemon settings
+nodemon.json
+
 # Logs
 logs
 *.log
@@ -28,7 +31,7 @@ coverage
 *.lcov
 
 # nyc test coverage
-.nyc_output
+.nye_output
 
 # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
