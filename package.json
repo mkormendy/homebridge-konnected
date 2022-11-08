@@ -5,13 +5,13 @@
   "description": "Homebridge plugin for Konnected security alarm systems",
   "author": "mkormendy",
   "license": "MIT",
-  "homepage": "https://github.com/konnected-io/homebridge-konnected/",
+  "homepage": "https://github.com/mkormendy/homebridge-konnected/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/konnected-io/homebridge-konnected.git"
+    "url": "git+https://github.com/mkormendy/homebridge-konnected.git"
   },
   "bugs": {
-    "url": "https://help.konnected.io/support/discussions/forums/32000043024"
+    "url": "https://github.com/mkormendy/homebridge-konnected/issues/new?assignees=mkormendy&labels=bug&template=bug-report.md&title="
   },
   "engines": {
     "node": ">=12.0.0",
