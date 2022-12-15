@@ -25,7 +25,7 @@ Replace this text with a clear and concise description of what you expected to h
   * NPM Version: 
   * Homebridge/HOOBS Version: 
   * Operating System: *(Raspbian / Ubuntu / Debian / Windows / macOS / Docker)*
-  * Process Supervisor: *(Docker / Systemd / init.d / pm2 / launchctl / hb-service / other / none)
+  * Process Supervisor: *(Docker / Systemd / init.d / pm2 / launchctl / hb-service / other / none)*
 * Konnected Panel(s):
   * Panel Hardware Version: 
   * Firmware Version: 
