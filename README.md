@@ -59,10 +59,10 @@
 
 ## Wiki
 
-* **[Installation](https://github.com/mkormendy/homebridge-konnected/wiki/Installation)**
-* **[Configuration](https://github.com/mkormendy/homebridge-konnected/wiki/Installation)**
-* **[Particulars](https://github.com/mkormendy/homebridge-konnected/wiki/Particulars)**
-* **[Troubleshooting](https://github.com/mkormendy/homebridge-konnected/wiki/Troubleshooting)**
+1. [Installation](https://github.com/mkormendy/homebridge-konnected/wiki/1.-Installation)
+2. [Configuration](https://github.com/mkormendy/homebridge-konnected/wiki/2.-Configuration)
+3. [Particulars](https://github.com/mkormendy/homebridge-konnected/wiki/3.-Particulars)
+4. [Troubleshooting](https://github.com/mkormendy/homebridge-konnected/wiki/4.-Troubleshooting)
 
 ## Contributions & Thanks
 
