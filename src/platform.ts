@@ -1,18 +1,18 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 
-import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { ZONES, ZONES_TO_PINS, ZONE_TYPES, TYPES_TO_ACCESSORIES } from './constants';
-import { PanelObjectInterface, RuntimeCacheInterface } from './interfaces';
+import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
+import { ZONES, ZONES_TO_PINS, ZONE_TYPES, TYPES_TO_ACCESSORIES } from './constants.js';
+import { PanelObjectInterface, RuntimeCacheInterface } from './interfaces.js';
 // import { ReplaceCircular } from './utilities';
-import { KonnectedPlatformAccessory } from './platformAccessory';
-
-import client from 'node-ssdp';      // for devices discovery
-import express from 'express';       // for the listening API
-import fetch from 'node-fetch';      // for making calls to the device
 import http from 'http';             // for creating a listening server
-import fs from 'fs';                 // for working with the filesystem
-import ip from 'ip';                 // for getting active IP on the system
-import { v4 as uuidv4 } from 'uuid'; // for handling UUIDs and creating auth tokens
+import { KonnectedPlatformAccessory } from './platformAccessory.js';
+
+import client from 'node-ssdp';          // for devices discovery
+import express from 'express';           // for the listening API
+import fetch from 'node-fetch';          // for making calls to the device
+import fs from 'fs';                     // for working with the filesystem
+import ip from 'ip';                     // for getting active IP on the system
+import { v4 as uuidv4 } from 'uuid';     // for handling UUIDs and creating auth tokens
 import { URL } from 'url';
 
 /**
@@ -33,9 +33,9 @@ import { URL } from 'url';
  * = react to state change requests from Homebridge/HomeKit and send actuator payload to panel
  */
 export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
-  public readonly Service: typeof Service = this.api.hap.Service;
-  public readonly Characteristic: typeof Characteristic = this.api.hap.Characteristic;
-  public readonly Accessory: typeof PlatformAccessory = this.api.platformAccessory;
+  public readonly Service: typeof Service;
+  public readonly Characteristic: typeof Characteristic;
+  public readonly Accessory: typeof PlatformAccessory;
 
   // global array of references to restored Homebridge/HomeKit accessories from the cache
   // (used in accessory cache disk reads - this is also updated when accessories are initialized)
@@ -53,40 +53,54 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
   public accessoriesRuntimeCache: RuntimeCacheInterface[] = [];
 
   // security system UUID (we only allow one security system per homebridge instance)
-  private securitySystemUUID: string = this.api.hap.uuid.generate(this.config.platform);
+  private securitySystemUUID: string;
 
   // define entry delay defaults
-  private entryTriggerDelay: number =
-    this.config.advanced?.entryDelaySettings?.delay !== null &&
-    typeof this.config.advanced?.entryDelaySettings?.delay !== 'undefined'
-      ? Math.round(this.config.advanced?.entryDelaySettings?.delay) * 1000
-      : 30000; // zero = instant trigger
+  private entryTriggerDelay: number;
 
   private entryTriggerDelayTimerHandle;
 
   // define exit delay defaults
-  private exitTriggerDelay: number =
-    this.config.advanced?.exitDelaySettings?.delay !== null &&
-    typeof this.config.advanced?.exitDelaySettings?.delay !== 'undefined'
-      ? Math.round(this.config.advanced?.exitDelaySettings?.delay) * 1000
-      : 30000; // zero = instant arming
+  private exitTriggerDelay: number;
 
   private exitTriggerDelayTimerHandle1;
   private exitTriggerDelayTimerHandle2;
   private exitTriggerDelayTimerHandle3;
 
   // define listening server variables
-  private listenerIP: string = this.config.advanced?.listenerIP ? this.config.advanced.listenerIP : ip.address(); // system defined primary network interface
-  private listenerPort: number = this.config.advanced?.listenerPort ? this.config.advanced.listenerPort : 0; // zero = autochoose
-  private ssdpTimeout: number = this.config.advanced?.discoveryTimeout
-    ? this.config.advanced.discoveryTimeout * 1000
-    : 5000; // 5 seconds
+  private listenerIP: string;
+  private listenerPort: number;
+  private ssdpTimeout: number;
 
   private listenerAuth: string[] = []; // for storing random auth strings
   private ssdpDiscovering = false; // for storing state of SSDP discovery process
   private ssdpDiscoverAttempts = 0;
 
   constructor(public readonly log: Logger, public readonly config: PlatformConfig, public readonly api: API) {
+    this.Service = this.api.hap.Service;
+    this.Characteristic = this.api.hap.Characteristic;
+    this.Accessory = this.api.platformAccessory;
+
+    this.securitySystemUUID = this.api.hap.uuid.generate(this.config.platform);
+
+    this.entryTriggerDelay =
+      this.config.advanced?.entryDelaySettings?.delay !== null &&
+      typeof this.config.advanced?.entryDelaySettings?.delay !== 'undefined'
+        ? Math.round(this.config.advanced?.entryDelaySettings?.delay) * 1000
+        : 30000; // zero = instant trigger
+
+    this.exitTriggerDelay =
+      this.config.advanced?.exitDelaySettings?.delay !== null &&
+      typeof this.config.advanced?.exitDelaySettings?.delay !== 'undefined'
+        ? Math.round(this.config.advanced?.exitDelaySettings?.delay) * 1000
+        : 30000; // zero = instant arming
+
+    this.listenerIP = this.config.advanced?.listenerIP ? this.config.advanced.listenerIP : ip.address(); // system defined primary network interface
+    this.listenerPort = this.config.advanced?.listenerPort ? this.config.advanced.listenerPort : 0; // zero = autochoose
+    this.ssdpTimeout = this.config.advanced?.discoveryTimeout
+      ? this.config.advanced.discoveryTimeout * 1000
+      : 5000; // 5 seconds
+
     this.log.debug('Finished initializing platform');
 
     // Homebridge looks for and fires this event when it has retrieved all cached accessories from disk
@@ -350,24 +364,23 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
               };
 
               // use the above information to construct panel in Homebridge config
-              this.updateHomebridgeConfig(panelUUID, panelResponseObject);
+              this.updateHomebridgeConfig(panelUUID, panelResponseObject as PanelObjectInterface);
 
-              // if the settings property does not exist in the response,
-              // then we have an unprovisioned panel
-              if (Object.keys(panelResponseObject.settings).length === 0) {
-                this.provisionPanel(panelUUID, panelResponseObject, listenerObject);
+              // if no settings property in response then we have an unprovisioned panel
+              if (Object.keys((panelResponseObject as PanelObjectInterface).settings).length === 0) {
+                this.provisionPanel(panelUUID, panelResponseObject as PanelObjectInterface, listenerObject);
               } else {
-                if (panelResponseObject.settings.endpoint_type === 'rest') {
-                  const panelBroadcastEndpoint = new URL(panelResponseObject.settings.endpoint);
+                if ((panelResponseObject as PanelObjectInterface).settings.endpoint_type === 'rest') {
+                  const panelBroadcastEndpoint = new URL((panelResponseObject as PanelObjectInterface).settings.endpoint);
 
                   // if the IP address or port are not the same, reprovision endpoint component
                   if (
                     panelBroadcastEndpoint.host !== this.listenerIP ||
                     Number(panelBroadcastEndpoint.port) !== this.listenerPort
                   ) {
-                    this.provisionPanel(panelUUID, panelResponseObject, listenerObject);
+                    this.provisionPanel(panelUUID, panelResponseObject as PanelObjectInterface, listenerObject);
                   }
-                } else if (panelResponseObject.settings.endpoint_type === 'aws_iot') {
+                } else if ((panelResponseObject as PanelObjectInterface).settings.endpoint_type === 'aws_iot') {
                   this.log.error(
                     `ERROR: Cannot provision panel ${panelUUID} with Homebridge. Panel has previously been provisioned with another platform (Konnected Cloud, SmartThings, Home Assistant, Hubitat,. etc). Please factory reset your Konnected Alarm panel and disable any other platform connectors before associating the panel with Homebridge.`
                   );
@@ -565,7 +578,7 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
         // If one network interface goes down, the panel can fallback to the other
         // interface and the accessories lose their associated UUID, which can
         // result in duplicated accessories, half of which become non-responsive.
-        const panelShortUUID: string =
+        const panelShortUUID: string | unknown =
           'chipId' in panelObject ? panelUUID.match(/([^-]+)$/i)![1] : panelObject.mac.replace(/:/g, '');
 
         // isolate specific panel and make sure there are zones in that panel

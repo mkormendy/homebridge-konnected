@@ -1,6 +1,6 @@
 import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
-import { TYPES_TO_ACCESSORIES } from './constants';
-import { KonnectedHomebridgePlatform } from './platform';
+import { TYPES_TO_ACCESSORIES } from './constants.js';
+import { KonnectedHomebridgePlatform } from './platform.js';
 
 /**
  * Platform Accessory
