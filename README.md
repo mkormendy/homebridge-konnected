@@ -7,11 +7,11 @@
 
 [![GitHub Release](https://flat.badgen.net/github/release/mkormendy/homebridge-konnected/master?icon=github)](https://github.com/mkormendy/homebridge-konnected/releases) [![npm Release](https://flat.badgen.net/npm/v/homebridge-konnected?icon=npm)](https://www.npmjs.com/package/homebridge-konnected)
 
-[![Lint & Build](https://flat.badgen.net/github/checks/mkormendy/homebridge-konnected?icon=github&label=lint%20%26%20build)](https://github.com/konnected-io/homebridge-konnected/actions) [![npm Download Total](https://flat.badgen.net/npm/dt/homebridge-konnected?icon=npm)](https://www.npmjs.com/package/homebridge-konnected)
+[![Lint & Build](https://flat.badgen.net/github/checks/mkormendy/homebridge-konnected?icon=github&label=lint%20%26%20build)](https://github.com/mkormendy/homebridge-konnected/actions) [![npm Download Total](https://flat.badgen.net/npm/dt/homebridge-konnected?icon=npm)](https://www.npmjs.com/package/homebridge-konnected)
 
 [![Homebridge Verified](https://flat.badgen.net/badge/homebridge/verified/4f4f4f?icon=https://developers.homebridge.io/assets/images/homebridge-color-round.svg&labelColor=57277c)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins) [![HOOBS Certified](https://flat.badgen.net/badge/hoobs/certified/4f4f4f?icon=https://developers.homebridge.io/assets/images/homebridge-color-round.svg&labelColor=ffac10)](https://plugins.hoobs.org/plugin/homebridge-konnected) [![Apple HomeKit](https://flat.badgen.net/badge/apple/homekit/f89f1a?icon=apple)](https://www.apple.com/ios/home/) 
 
-[![Discord Channel](https://flat.badgen.net/badge/discord/homebridge%23konnected/6670f5?icon=discord)](https://discord.gg/YsujtCysZZ) [![Discord Channel](https://flat.badgen.net/badge/reddit/r%2Fkonnected/FF4500?icon=https://www.redditinc.com/assets/images/site/logo01.svg)](https://www.reddit.com/r/konnected/)
+[![Discord Channel](https://flat.badgen.net/badge/discord/homebridge%23konnected/6670f5?icon=discord)](https://discord.gg/YsujtCysZZ) [![Discord Channel](https://flat.badgen.net/badge/reddit/r%2Fkonnected/FF4500?icon=https://www.redditinc.com/assets/images/site/logo01.svg)](https://www.reddit.com/r/konnected/) [![Discussions](https://flat.badgen.net/badge/github/discussions?icon=github&label=repo)](https://github.com/mkormendy/homebridge-konnected/discussions)
 
 [![License: MIT](https://flat.badgen.net/badge/license/MIT/blue)](https://github.com/mkormendy/homebridge-konnected/blob/master/LICENSE)
 
