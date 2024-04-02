@@ -508,8 +508,8 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
       }
     }
 
-    const listeningEndpoint = `http://${listenerObject.ip}:${listenerObject.port}/api/konnected`;
-    const panelSettingsEndpoint = `http://${panelIP}:${panelPort}/settings`;
+    const listeningEndpoint = encodeURI(`http://${listenerObject.ip}:${listenerObject.port}/api/konnected`);
+    const panelSettingsEndpoint = encodeURI(`http://${panelIP}:${panelPort}/settings`);
 
     const bearerAuthToken = uuidv4(); // generate an RFC4122 compliant UUID
     this.listenerAuth.push(bearerAuthToken); // add to array for listening authorization
