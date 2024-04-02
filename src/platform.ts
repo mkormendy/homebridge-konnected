@@ -488,7 +488,7 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
    * @param panelObject PanelObjectInterface  The status response object of the plugin from discovery.
    * @param listenerObject object  Details object for this plugin's listening server.
    */
-  provisionPanel(panelUUID: string, panelObject: PanelObjectInterface, listenerObject) {
+  async provisionPanel(panelUUID: string, panelObject: PanelObjectInterface, listenerObject) {
     let panelIP: string = panelObject.ip;
     let panelPort: number = panelObject.port;
     let panelBlink = true;
