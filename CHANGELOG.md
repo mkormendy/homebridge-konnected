@@ -1,5 +1,7 @@
 
 
+## [1.3.2](https://github.com/mkormendy/homebridge-konnected/compare/v1.3.1...v1.3.2) (2024-04-02)
+
 ## [1.3.1](https://github.com/mkormendy/homebridge-konnected/compare/v1.3.0...v1.3.1) (2022-11-07)
 
 # [1.3.0](https://github.com/konnected-io/homebridge-konnected/compare/v1.2.1...v1.3.0) (2022-11-07)
