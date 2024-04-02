@@ -4,12 +4,12 @@ import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
 import { ZONES, ZONES_TO_PINS, ZONE_TYPES, TYPES_TO_ACCESSORIES } from './constants.js';
 import { PanelObjectInterface, RuntimeCacheInterface } from './interfaces.js';
 // import { ReplaceCircular } from './utilities';
-import http from 'http';             // for creating a listening server
 import { KonnectedPlatformAccessory } from './platformAccessory.js';
 
 import client from 'node-ssdp';          // for devices discovery
 import express from 'express';           // for the listening API
 import fetch from 'node-fetch';          // for making calls to the device
+import http, { Agent } from 'node:http'; // for http listening server and altering http request options
 import fs from 'fs';                     // for working with the filesystem
 import ip from 'ip';                     // for getting active IP on the system
 import { v4 as uuidv4 } from 'uuid';     // for handling UUIDs and creating auth tokens
@@ -76,6 +76,8 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
   private ssdpDiscovering = false; // for storing state of SSDP discovery process
   private ssdpDiscoverAttempts = 0;
 
+  private httpAgent: Agent;
+
   constructor(public readonly log: Logger, public readonly config: PlatformConfig, public readonly api: API) {
     this.Service = this.api.hap.Service;
     this.Characteristic = this.api.hap.Characteristic;
@@ -100,6 +102,9 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
     this.ssdpTimeout = this.config.advanced?.discoveryTimeout
       ? this.config.advanced.discoveryTimeout * 1000
       : 5000; // 5 seconds
+
+    // close fetch requests after request/response is performed/received
+    this.httpAgent = new http.Agent({keepAlive: false});
 
     this.log.debug('Finished initializing platform');
 
@@ -354,7 +359,9 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
         // dedupe responses, ignore excluded panels in environment variables, and then provision panel(s)
         if (!ssdpDeviceIDs.includes(panelUUID) && !excludedUUIDs.includes(panelUUID)) {
           // get panel status object (not using async await)
-          fetch(ssdpHeaderLocation.replace('Device.xml', 'status'))
+          fetch(ssdpHeaderLocation.replace('Device.xml', 'status'), { 
+            agent: this.httpAgent,
+          })
             // convert response to JSON
             .then((fetchResponse) => fetchResponse.json())
             .then((panelResponseObject) => {
@@ -537,6 +544,7 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
         await fetch(url, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          agent: this.httpAgent,
           body: JSON.stringify(panelConfigurationPayload),
         });
       } catch (error: unknown) {
@@ -1128,6 +1136,7 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
                   const response = await fetch(url, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
+                    agent: this.httpAgent,
                     body: JSON.stringify(actuatorPayload),
                   });
                   if (
