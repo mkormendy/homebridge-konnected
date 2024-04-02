@@ -106,7 +106,7 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
     // Homebridge looks for and fires this event when it has retrieved all cached accessories from disk
     // this event is also used to init other methods for this plugin
     this.api.on('didFinishLaunching', () => {
-      log.debug('Executed didFinishLaunching callback. Accessories retreived from cache...');
+      this.log.debug('Executed didFinishLaunching callback. Accessories retreived from cache...');
 
       // run the listening server & register the security system
       this.listeningServer();
@@ -330,7 +330,7 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
    * @reference Alarm Panel Pro: urn:schemas-konnected-io:device:Security:2
    */
   discoverPanels() {
-    const ssdpClient = new client.Client();
+    const ssdpDiscovery = new client.Client();
     const ssdpUrnPartial = 'urn:schemas-konnected-io:device';
     const ssdpDeviceIDs: string[] = []; // used later for deduping SSDP reflections
     const excludedUUIDs: string[] = String(process.env.KONNECTED_EXCLUDES).split(','); // used for ignoring specific panels (mostly for development)
@@ -339,10 +339,11 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
     this.ssdpDiscovering = true;
 
     // begin discovery
-    ssdpClient.search('ssdp:all');
+    ssdpDiscovery.search('ssdp:all');
 
     // on discovery
-    ssdpClient.on('response', (headers) => {
+    ssdpDiscovery.on('response', (headers) => {
+
       // check for only Konnected devices
       if (headers.ST!.indexOf(ssdpUrnPartial) !== -1) {
         // store reported URL of panel that responded
@@ -396,7 +397,7 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
 
     // stop discovery after a number of seconds seconds, default is 5
     setTimeout(() => {
-      ssdpClient.stop();
+      ssdpDiscovery.stop();
       this.ssdpDiscovering = false;
       if (ssdpDeviceIDs.length) {
         this.log.debug('Discovery complete. Found panels:\n' + JSON.stringify(ssdpDeviceIDs, null, 2));
