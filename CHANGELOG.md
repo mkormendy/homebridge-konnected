@@ -2,16 +2,69 @@
 
 ## [1.3.2](https://github.com/mkormendy/homebridge-konnected/compare/v1.3.1...v1.3.2) (2024-04-02)
 
+### Supported/Tested Versions:
+**NodeJS:** v19+<br>**Homebridge:** v1.7.0
+
+### Changelog:
+- Updates README with Discussions Forum link and cleans up links to Konnected.io unmanaged repo (5eb8577)
+- Update bug-report.md (6b28857)
+- Updates README Wiki links (b848626)
+- Updates VS Code ESLint settings, console output, and TypeScript compiler options. (c007a1c)
+- Updates node_module dependencies and resolves Dependabot alerts. (691af9b)
+- Improves code to "next" ES module-based standards. (e6d47e0)
+- Cleanup of logging and renaming of symbol for semantics. (e1c42aa)
+- Ensure URL spec format for urls. (9230111)
+- Corrects requirement for async/await in promise for fetch request. (5de1284)
+- Resolves #40 in response to breaking changes with Node 19+ http agent keep-alive defaults which caused implications with the node-fetch module used. (30dbac9)
+
 ## [1.3.1](https://github.com/mkormendy/homebridge-konnected/compare/v1.3.0...v1.3.1) (2022-11-07)
 
-# [1.3.0](https://github.com/konnected-io/homebridge-konnected/compare/v1.2.1...v1.3.0) (2022-11-07)
+### Changelog:
+- Updates package.json with new URLs location for homepage, repository and bugs. (784d4f2)
+
+## [1.3.0](https://github.com/konnected-io/homebridge-konnected/compare/v1.2.1...v1.3.0) (2022-11-07)
+
+Nothing has changed from a functionality perspective in this release.
+
+### Changelog:
+- Moved away from Konnected's GitHub repository to personal repository to better handle public reqs. vs corporate reqs.
+- Stops tracking nodemon.json changes, these are established now and static. (7fc1349)
+- Merge branch 'master' of https://github.com/mkormendy/homebridge-konnected (0fe8848)
+- Update issue templates (b06fe93)
+- Update issue templates (f27d1d6)
+- Updates README with links to personal repository and also moves information out and into that repository's wiki. (f372b76)
+- Updates branding banner to reprioritize brands. (dee196b)
+- Modifies gitignore changes. (a46b312)
 
 ## [1.2.1](https://github.com/konnected-io/homebridge-konnected/compare/v1.2.0...v1.2.1) (2022-05-23)
+
+### Changelog:
+- Adds new variables and logic for exit delay feature. (65dc4c11)
+- Fixes typing for error handling to satisfy TypeScript hinting. (e42a7f20)
+- Adds better logic for IP and port changes when writing to the homebridge config file. (108ac136)
+- Cleans up and makes log output more consistent. (f81a8f58)
+- Cleans up and makes log output more consistent. (4b64b772)
+- Adjusts log output verbiage to clarify factory resets for panels previously provisioned with another platform. (763e44e9)
+- Refactors unifies binary states to fix issues with sensor state logic. (bc223440)
+- Fixes entry delay configuration defaults and assignment. (a1938eca)
+- Adds reference for interactive help on Discord, contributions and thanks to bottom of README markdown file. (e613265c)
+- Updates verbiage for the plugin's Advanced section of the configuration documentation. (db1454f5)
+- Adds new documentation points for exit delay feature as shown in the example configuration. (2b6fbf4e)
+- Adds new exit delay feature to the example configuration. (a3ff00d3)
+- Updates upcoming features list. (424b0362)
+- Updates feature set list. (e2e1d036)
+- Updates badges at top of README markdown file and also verbiage for promo code. (f065ec41)
+- Updates package.json with repo and links for submitting issues (used in Homebridge UI). (50608ff3)
+- Adjusts recommended example values for beeper pulses to coincide with firmware timings. (c8ffc699)
+- Updates Homebridge UI configuration screen to accommodate new Exit delay settings. (5c9cb51c)
+- Adds vscode launch notes. (d03aa95b)
+- Renames method to fix typo. (b2f4bace)
+- docs: Updates CHANGELOG with proper details. (9a501fb3)
 
 ## [1.1.8](https://github.com/konnected-io/homebridge-konnected/compare/1.1.7...1.1.8) (2021-08-03)
 
 ### Changes:
-build: Adds release-it configuration block to package.json to modify CHANGELOG.md on publish. (343227b)
+- build: Adds release-it configuration block to package.json to modify CHANGELOG.md on publish. (343227b)
 
 ## [1.1.7](https://github.com/konnected-io/homebridge-konnected/compare/1.1.6...1.1.7) (2021-08-03)
 
