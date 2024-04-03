@@ -39,7 +39,7 @@
           "step": 1,
           "minimum": 1,
           "maximum": 30,
-          "placeholder": "(default: 5)"
+          "placeholder": "(Default: 5)"
         },
         "entryDelaySettings": {
           "type": "object",
@@ -56,7 +56,7 @@
               "type": "number",
               "step": 1,
               "minimum": 0,
-              "placeholder": "(default: 30)"
+              "placeholder": "(Default: 30)"
             },
             "pulseDuration": {
               "title": "Beeper Pulse Duration (milliseconds) (optional)",
@@ -98,7 +98,7 @@
               "type": "number",
               "step": 1,
               "minimum": 0,
-              "placeholder": "(default: 30)"
+              "placeholder": "(Default: 30)"
             },
             "audibleBeeperModes": {
               "title": "The following selected arming modes will have an audible beeper countdown (if delay is not zero):",
@@ -115,7 +115,7 @@
                 "enumNames": [
                   "Home/Stay",
                   "Night",
-                  "Away (default)"
+                  "Away (Default)"
                 ]
               },
               "default": [
@@ -516,7 +516,7 @@
                     "pollInterval": {
                       "title": "Poll Interval (minutes) (optional)",
                       "description": "Length of time between, in minutes (between 1 and 1440), that this sensor will report its value.",
-                      "placeholder": "(default: 3)",
+                      "placeholder": "(Default: 3)",
                       "type": "number",
                       "step": 1,
                       "minimum": 1,
@@ -545,7 +545,7 @@
                         "titleMap": [
                           {
                             "value": "high",
-                            "name": "High (unselected default)"
+                            "name": "High (normal default)"
                           },
                           {
                             "value": "low",
