@@ -17,20 +17,20 @@
       "expanded": false,
       "properties": {
         "listenerIP": {
-          "title": "Listening IP (optional)",
-          "description": "If the system hosting Homebridge/HOOBS has multiple active network adapters, use this field to force the network IPv4 address that this plugin will listen for zone state changes on.",
+          "title": "Listening IP (auto-assigned)",
+          "description": "The IPv4 network address to listen for zone state changes on. Useful if the system hosting Homebridge/HOOBS has multiple active network adapters and you want to choose which one to use.",
           "type": "string",
           "format": "ipv4",
-          "placeholder": "(default: automatically selected)"
+          "placeholder": "(E.g., 192.168.1.100)"
         },
         "listenerPort": {
-          "title": "Listening Port (optional)",
-          "description": "Use this field to force the network port that this plugin will listen for zone state changes on (between 1000 and 65535).",
+          "title": "Listening Port (auto-assigned)",
+          "description": "The network port to listen for zone state changes on.",
           "type": "number",
           "step": 1,
           "minimum": 1000,
           "maximum": 65535,
-          "placeholder": "(default: randomized by availability)"
+          "placeholder": "(Between 1000 and 65535)"
         },
         "discoveryTimeout": {
           "title": "Discovery Timeout (seconds) (optional)",
