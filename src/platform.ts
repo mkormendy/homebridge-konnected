@@ -430,6 +430,9 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
    * @param panelObject PanelObjectInterface  The status response object of the plugin from discovery.
    */
   updateHomebridgeConfig(panelUUID: string, panelObject: PanelObjectInterface) {
+
+    let configChanged = false;
+
     // homebridge constants
     const config = this.api.user.configPath();
     const storage = this.api.user.storagePath();
@@ -448,12 +451,33 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
 
     // if 'konnected' platform exists in the config
     if (platform >= 0) {
-      // get the panels array or start with an empty array
+
+      type ConfigPlatformAdvancedType = {
+        listenerPort?: number;
+        listenerIP?: string;
+        discoveryTimeout?: string;
+        entryDelay?: number;
+      };
+      modifiedConfig.platforms[platform].advanced as ConfigPlatformAdvancedType;
+
+      // set defaults for listener otherwise
+      if (typeof modifiedConfig.platforms[platform].advanced?.listenerIP === 'undefined' ||
+          modifiedConfig.platforms[platform].advanced?.listenerIP !== this.listenerIP) {
+        modifiedConfig.platforms[platform].advanced.listenerIP = this.listenerIP;
+        configChanged = true;
+      }
+      if (typeof modifiedConfig.platforms[platform].advanced?.listenerPort === 'undefined' || 
+          modifiedConfig.platforms[platform].advanced?.listenerPort !== this.listenerPort) {
+        modifiedConfig.platforms[platform].advanced.listenerPort = this.listenerPort;
+        configChanged = true;
+      }
+
+      // get the panels array OR start with an empty array
       modifiedConfig.platforms[platform].panels = modifiedConfig.platforms[platform].panels || [];
 
-      // find existing definition of the panel
+      // find existing panel definitions
       const platformPanelPosition = modifiedConfig.platforms[platform].panels.findIndex((panel: { [key: string]: unknown }) => panel.uuid === panelUUID);
-
+      
       if (platformPanelPosition < 0) {
         // if panel doesn't exist, push to panels array and write backup and config
         modifiedConfig.platforms[platform].panels.push({
@@ -465,23 +489,33 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
           ipAddress: panelObject.ip,
           port: panelObject.port,
         });
-        fs.writeFileSync(backup, JSON.stringify(existingConfig, null, 4));
-        fs.writeFileSync(config, JSON.stringify(modifiedConfig, null, 4));
+        configChanged = true;
       } else if (
         modifiedConfig.platforms[platform].panels[platformPanelPosition].uuid === panelUUID &&
         (modifiedConfig.platforms[platform].panels[platformPanelPosition].ipAddress !== panelObject.ip ||
           modifiedConfig.platforms[platform].panels[platformPanelPosition].port !== panelObject.port)
       ) {
-        // if the IP address or port is the same don't update the config
+        // if panel IP address or port is not the expected (e.g., network DHCP changes)
+        // we need to update the config for this identified panel
         modifiedConfig.platforms[platform].panels[platformPanelPosition].name = (
           panelObject.model && panelObject.model !== '' ? panelObject.model : 'Konnected V1-V2'
         ).replace(/[^A-Za-z0-9\s/'":\-#.]/gi, '');
         modifiedConfig.platforms[platform].panels[platformPanelPosition].uuid = panelUUID;
         modifiedConfig.platforms[platform].panels[platformPanelPosition].ipAddress = panelObject.ip;
         modifiedConfig.platforms[platform].panels[platformPanelPosition].port = panelObject.port;
+        configChanged = true;
+      }
 
+      if (configChanged === true) {
+        this.log.debug(
+          'Backing up and writing Konnected platform configurations to Homebridge config.json file\n'+JSON.stringify(modifiedConfig.platforms[platform], null, 4)
+        );
         fs.writeFileSync(backup, JSON.stringify(existingConfig, null, 4));
         fs.writeFileSync(config, JSON.stringify(modifiedConfig, null, 4));
+      } else {
+        this.log.debug(
+          'Found and verified Konnected platform configurations in Homebridge config.json file:\n'+JSON.stringify(modifiedConfig.platforms[platform], null, 4)
+        );
       }
     }
   }
