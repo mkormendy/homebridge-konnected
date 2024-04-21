@@ -75,6 +75,8 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
   private listenerAuth: string[] = []; // for storing random auth strings
   private ssdpDiscovering = false; // for storing state of SSDP discovery process
   private ssdpDiscoverAttempts = 0;
+  
+  private manualDiscovery;
 
   private httpAgent: Agent;
 
@@ -102,6 +104,8 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
     this.ssdpTimeout = this.config.advanced?.discoveryTimeout
       ? this.config.advanced.discoveryTimeout * 1000
       : 5000; // 5 seconds
+
+    this.manualDiscovery  = this.config.advanced?.manualDiscovery ? this.config.advanced.manualDiscovery : [];
 
     // close fetch requests after request/response is performed/received
     this.httpAgent = new http.Agent({keepAlive: false});
@@ -334,77 +338,121 @@ export class KonnectedHomebridgePlatform implements DynamicPlatformPlugin {
    * @reference Alarm Panel V1-V2: urn:schemas-konnected-io:device:Security:1
    * @reference Alarm Panel Pro: urn:schemas-konnected-io:device:Security:2
    */
+  discoveredPanel(panelUUID, ssdpHeaderLocation, ssdpDeviceIDs, excludedUUIDs) {
+    // dedupe responses, ignore excluded panels in environment variables, and then provision panel(s)
+    if (!ssdpDeviceIDs.includes(panelUUID) && !excludedUUIDs.includes(panelUUID)) {
+      // get panel status object (not using async await)
+      fetch(ssdpHeaderLocation.replace('Device.xml', 'status'), { 
+        agent: this.httpAgent,
+      })
+        // convert response to JSON
+        .then((fetchResponse) => fetchResponse.json())
+        .then((panelResponseObject) => {
+          // create listener object to pass back to panel when provisioning it
+          const listenerObject = {
+            ip: this.listenerIP,
+            port: this.listenerPort,
+          };
+
+          // use the above information to construct panel in Homebridge config
+          this.updateHomebridgeConfig(panelUUID, panelResponseObject as PanelObjectInterface);
+
+          // if no settings property in response then we have an unprovisioned panel
+          if (Object.keys((panelResponseObject as PanelObjectInterface).settings).length === 0) {
+            this.provisionPanel(panelUUID, panelResponseObject as PanelObjectInterface, listenerObject);
+          } else {
+            if ((panelResponseObject as PanelObjectInterface).settings.endpoint_type === 'rest') {
+              const panelBroadcastEndpoint = new URL((panelResponseObject as PanelObjectInterface).settings.endpoint);
+
+              // if the IP address or port are not the same, reprovision endpoint component
+              if (
+                panelBroadcastEndpoint.host !== this.listenerIP ||
+                Number(panelBroadcastEndpoint.port) !== this.listenerPort
+              ) {
+                this.provisionPanel(panelUUID, panelResponseObject as PanelObjectInterface, listenerObject);
+              }
+            } else if ((panelResponseObject as PanelObjectInterface).settings.endpoint_type === 'aws_iot') {
+              this.log.error(
+                `ERROR: Cannot provision panel ${panelUUID} with Homebridge. Panel has previously been provisioned with another platform (Konnected Cloud, SmartThings, Home Assistant, Hubitat,. etc). Please factory reset your Konnected Alarm panel and disable any other platform connectors before associating the panel with Homebridge.`
+              );
+            }
+          }
+        });
+
+      // add the UUID to the deduping array
+      ssdpDeviceIDs.push(panelUUID);
+    }
+  }
+  
+  /**
+   * Discover alarm panels on the network.
+   * @reference https://help.konnected.io/support/solutions/articles/32000026805-discovery
+   *
+   * Konnected SSDP Search Targets:
+   * @reference Alarm Panel V1-V2: urn:schemas-konnected-io:device:Security:1
+   * @reference Alarm Panel Pro: urn:schemas-konnected-io:device:Security:2
+   */
   discoverPanels() {
-    const ssdpDiscovery = new client.Client();
-    const ssdpUrnPartial = 'urn:schemas-konnected-io:device';
     const ssdpDeviceIDs: string[] = []; // used later for deduping SSDP reflections
     const excludedUUIDs: string[] = String(process.env.KONNECTED_EXCLUDES).split(','); // used for ignoring specific panels (mostly for development)
 
     // set discovery state
     this.ssdpDiscovering = true;
 
-    // begin discovery
-    ssdpDiscovery.search('ssdp:all');
+    let ssdpDiscovery;
 
-    // on discovery
-    ssdpDiscovery.on('response', (headers) => {
-
-      // check for only Konnected devices
-      if (headers.ST!.indexOf(ssdpUrnPartial) !== -1) {
-        // store reported URL of panel that responded
-        const ssdpHeaderLocation: string = headers.LOCATION || '';
-        // extract UUID of panel from the USN string
-        const panelUUID: string = headers.USN!.match(/^uuid:(.*)::.*$/i)![1] || '';
-
-        // dedupe responses, ignore excluded panels in environment variables, and then provision panel(s)
-        if (!ssdpDeviceIDs.includes(panelUUID) && !excludedUUIDs.includes(panelUUID)) {
-          // get panel status object (not using async await)
-          fetch(ssdpHeaderLocation.replace('Device.xml', 'status'), { 
-            agent: this.httpAgent,
+    if (this.manualDiscovery.length) {
+      // manual discovery probe ip:port for device info
+      this.log.debug('Manual discovery enabled attempting connect to modules');
+      for (let i=0, iend=this.manualDiscovery.length; i<iend; ++i) {
+        const manualDiscovery = this.manualDiscovery[i];
+        const deviceLocation: string = 'http://' + manualDiscovery.ipAddress + ':' + manualDiscovery.port.toString() + '/Device.xml';
+        this.log.info('Probing ' + deviceLocation);
+        fetch(deviceLocation, { 
+          agent: this.httpAgent,
+        })
+          .then(response => response.text())
+          .then(data => {
+            const panelUUID: string = data.match(/<UDN>uuid:(.*?)<\/UDN>/i)![1] || '';
+            if (panelUUID !== '') {
+              this.log.info(`Manual discovery found panel ${deviceLocation} -- ${panelUUID}`);
+              this.discoveredPanel(panelUUID, deviceLocation, ssdpDeviceIDs, excludedUUIDs);
+            } else {
+              this.log.info(`Manual discovery invalid response from ${deviceLocation} -- ${data}`);
+            }
           })
-            // convert response to JSON
-            .then((fetchResponse) => fetchResponse.json())
-            .then((panelResponseObject) => {
-              // create listener object to pass back to panel when provisioning it
-              const listenerObject = {
-                ip: this.listenerIP,
-                port: this.listenerPort,
-              };
-
-              // use the above information to construct panel in Homebridge config
-              this.updateHomebridgeConfig(panelUUID, panelResponseObject as PanelObjectInterface);
-
-              // if no settings property in response then we have an unprovisioned panel
-              if (Object.keys((panelResponseObject as PanelObjectInterface).settings).length === 0) {
-                this.provisionPanel(panelUUID, panelResponseObject as PanelObjectInterface, listenerObject);
-              } else {
-                if ((panelResponseObject as PanelObjectInterface).settings.endpoint_type === 'rest') {
-                  const panelBroadcastEndpoint = new URL((panelResponseObject as PanelObjectInterface).settings.endpoint);
-
-                  // if the IP address or port are not the same, reprovision endpoint component
-                  if (
-                    panelBroadcastEndpoint.host !== this.listenerIP ||
-                    Number(panelBroadcastEndpoint.port) !== this.listenerPort
-                  ) {
-                    this.provisionPanel(panelUUID, panelResponseObject as PanelObjectInterface, listenerObject);
-                  }
-                } else if ((panelResponseObject as PanelObjectInterface).settings.endpoint_type === 'aws_iot') {
-                  this.log.error(
-                    `ERROR: Cannot provision panel ${panelUUID} with Homebridge. Panel has previously been provisioned with another platform (Konnected Cloud, SmartThings, Home Assistant, Hubitat,. etc). Please factory reset your Konnected Alarm panel and disable any other platform connectors before associating the panel with Homebridge.`
-                  );
-                }
-              }
-            });
-
-          // add the UUID to the deduping array
-          ssdpDeviceIDs.push(panelUUID);
-        }
+          .catch (error => {
+            this.log.error('Manual discovery failed for ' + manualDiscovery.ipAddress + ':' + manualDiscovery.port + ' - ' + error);
+          });
       }
-    });
+    } else {
+      this.log.debug('Automatic discovery enabled starting ssdpClient');
+
+      const ssdpDiscovery = new client.Client();
+      const ssdpUrnPartial = 'urn:schemas-konnected-io:device';
+  
+      // begin discovery
+      ssdpDiscovery.search('ssdp:all');
+
+      // on discovery
+      ssdpDiscovery.on('response', (headers) => {
+
+        // check for only Konnected devices
+        if (headers.ST!.indexOf(ssdpUrnPartial) !== -1) {
+          // store reported URL of panel that responded
+          const ssdpHeaderLocation: string = headers.LOCATION || '';
+          // extract UUID of panel from the USN string
+          const panelUUID: string = headers.USN!.match(/^uuid:(.*)::.*$/i)![1] || '';
+          this.discoveredPanel(panelUUID, ssdpHeaderLocation, ssdpDeviceIDs, excludedUUIDs);
+        }
+      });
+    }
 
     // stop discovery after a number of seconds seconds, default is 5
     setTimeout(() => {
-      ssdpDiscovery.stop();
+      if (ssdpDiscovery !== undefined) {
+        ssdpDiscovery.stop();
+      }
       this.ssdpDiscovering = false;
       if (ssdpDeviceIDs.length) {
         this.log.debug('Discovery complete. Found panels:\n' + JSON.stringify(ssdpDeviceIDs, null, 2));
