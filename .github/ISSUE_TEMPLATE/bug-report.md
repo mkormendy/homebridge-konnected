@@ -8,7 +8,7 @@ assignees: mkormendy
 ---
 
 **Describe the bug**
-Replaee this text with a clear and concise description of what the bug or issue is.
+Replace this text with a clear and concise description of what the bug or issue is.
 
 **To Reproduce**
 Replace this text with steps to reproduce the bug or issue you're having:
